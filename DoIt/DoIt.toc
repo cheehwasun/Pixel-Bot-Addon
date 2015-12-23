@@ -1,0 +1,7 @@
+## Author: WiNiFiX
+## Interface: 60200
+## Title: DoIt
+## Version: 1.0.0
+## SavedVariablesPerCharacter: DoItOptions
+DoItBase.lua
+
