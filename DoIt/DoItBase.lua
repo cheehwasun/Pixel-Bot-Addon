@@ -177,15 +177,3 @@ local function eventHandler(self, event, ...)
 end	
 
 f:SetScript("OnEvent", eventHandler)
-
--- local last = 0 -- the time since we last checked cooldowns (don't change this value)
--- local throttle = 1 -- check every .5 seconds
-
--- f:SetScript('OnUpdate', function(self, elapsed)
-	-- last = last + elapsed
-	-- if last >= throttle then
-		-- CheckCooldowns() 
-		-- last = 0 -- reset time since we last checked
-	-- end
--- end)
-
