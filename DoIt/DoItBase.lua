@@ -36,7 +36,7 @@ local function updateHP()
 		end
 		
 		while i <= 5 do
-			hpframes[i].t:SetTexture(255, 255, 255, 1)
+			hpframes[i].t:SetTexture(0, 255, 255, 1)
 			hpframes[i].t:SetAllPoints(false)
 			i = 1 + i
 		end
@@ -62,7 +62,7 @@ local function updateCD()
 																-- BUG: when trigger global CD on ANY spell this increases to 1 second
 																-- dont have a workaround for now
 				if (lastCooldownState[spellId] ~= "onCD") then										 
-					print("Spell with Id = " .. spellId .. " is on CD: " .. remainingCD)
+					--print("Spell with Id = " .. spellId .. " is on CD: " .. remainingCD)
 					
 					cooldownframes[spellId].t:SetTexture(255, 0, 0, 1)
 					cooldownframes[spellId].t:SetAllPoints(false)
@@ -71,7 +71,7 @@ local function updateCD()
 				end				
 			else
 				if (lastCooldownState[spellId] ~= "offCD") then
-					print("Spell with Id = " .. spellId .. " is off CD and can be cast")
+					--print("Spell with Id = " .. spellId .. " is off CD and can be cast")
 					
 					cooldownframes[spellId].t:SetTexture(255, 255, 255, 1)
 					cooldownframes[spellId].t:SetAllPoints(false)
@@ -137,7 +137,7 @@ local function updateIsFriendly()
 		else
 			print ("Unit is friendly: False")
 			
-			isTargetFriendlyFrame.t:SetTexture(255, 0, 0, 1)
+			isTargetFriendlyFrame.t:SetTexture(0, 0, 255, 1)
 		end
 	
 		lastIsFriend = isFriend
@@ -171,7 +171,7 @@ local function initFrames()
 		hpframes[i]:SetSize(size, size)
 		hpframes[i]:SetPoint("TOPLEFT", (i - 1) * size, 0)        
 		hpframes[i].t = hpframes[i]:CreateTexture()        
-		hpframes[i].t:SetTexture(255, 255, 255, 1)
+		hpframes[i].t:SetTexture(0, 255, 255, 1)
 		hpframes[i].t:SetAllPoints(hpframes[i])
 		hpframes[i]:Show()
 		
