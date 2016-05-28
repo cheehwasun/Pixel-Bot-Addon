@@ -1,8 +1,9 @@
 -- Configurable Variables
 local size = 5;	-- this is the size of the "pixels" at the top of the screen that will show stuff, currently 5x5 because its easier to see and debug with
 local cooldowns = {  -- These should be spellIDs for the spell you want to track for cooldowns
-	642, -- Divine Shield
-	633	 -- Lay on hands
+	56641, -- Steadyshot
+	3044,  -- Arcane Shot
+	34026  -- Kill Command
 }
 
 -- Actual Addon Code below
@@ -14,6 +15,8 @@ f:RegisterEvent("ADDON_LOADED")
 local hpframes = {}
 local cooldownframes = {}
 local healthFrames = {}
+local isTargetFriendlyFrame = nil
+local hasTargetFrame = nil
 
 local hpPrev = 0
 local lastCooldownState = {}
@@ -120,6 +123,47 @@ local function updateHealth()
 	end
 end
  
+local lastIsFriend = true 
+ 
+local function updateIsFriendly()
+	isFriend = UnitIsFriend("player","target");
+	
+	if (isFriend ~= lastIsFriend) then
+	
+		if (isFriend == true) then
+			print ("Unit is friendly: True")
+			
+			isTargetFriendlyFrame.t:SetTexture(0, 255, 0, 1)
+		else
+			print ("Unit is friendly: False")
+			
+			isTargetFriendlyFrame.t:SetTexture(255, 0, 0, 1)
+		end
+	
+		lastIsFriend = isFriend
+	end
+end
+
+local lastTargetGUID = ""
+
+local function hasTarget()
+	guid = UnitGUID("target")
+		
+	if (guid ~= lastTargetGUID) then
+		if (guid == nil) then
+			print ("Target GUID: None" )	
+			
+			hasTargetFrame.t:SetTexture(0, 0, 0, 1)
+		else			
+			print ("Target GUID: " .. guid )	
+			
+			hasTargetFrame.t:SetTexture(255, 0, 0, 1)
+		end
+			
+		lastTargetGUID = guid		
+	end
+end
+ 
 local function initFrames()
 	print ("Initialising Holy Power Frames")
 	for i = 1, 5 do
@@ -161,6 +205,29 @@ local function initFrames()
 		
 		healthFrames[i]:SetScript("OnUpdate", updateHealth)
 	end
+	
+	print ("Initialising IsTargetFriendly Frame")
+	isTargetFriendlyFrame = CreateFrame("frame");
+	isTargetFriendlyFrame:SetSize(size, size);
+	isTargetFriendlyFrame:SetPoint("TOPLEFT", 0, -(size * 2))    
+	isTargetFriendlyFrame.t = isTargetFriendlyFrame:CreateTexture()        
+	isTargetFriendlyFrame.t:SetTexture(0, 255, 0, 1)
+	isTargetFriendlyFrame.t:SetAllPoints(isTargetFriendlyFrame)
+	isTargetFriendlyFrame:Show()		
+		
+	isTargetFriendlyFrame:SetScript("OnUpdate", updateIsFriendly)
+	
+	print ("Initialising HasTarget Frame")
+	hasTargetFrame = CreateFrame("frame");
+	hasTargetFrame:SetSize(size, size);
+	hasTargetFrame:SetPoint("TOPLEFT", size, -(size * 2))    
+	hasTargetFrame.t = hasTargetFrame:CreateTexture()        
+	hasTargetFrame.t:SetTexture(0, 255, 0, 1)
+	hasTargetFrame.t:SetAllPoints(hasTargetFrame)
+	hasTargetFrame:Show()		
+		
+	hasTargetFrame:SetScript("OnUpdate", hasTarget)
+	
 	print ("Initialization Complete")
 end
 
