@@ -234,11 +234,11 @@ local function hasTarget()
 		
 	if (guid ~= lastTargetGUID) then
 		if (guid == nil) then
-			print ("Target GUID: None" )	
+			--print ("Target GUID: None" )	
 			
 			hasTargetFrame.t:SetTexture(0, 0, 0, 1)
 		else			
-			print ("Target GUID: " .. guid )	
+			--print ("Target GUID: " .. guid )	
 			
 			hasTargetFrame.t:SetTexture(255, 0, 0, 1)
 		end
@@ -273,38 +273,26 @@ end
 
 local lastTargetCastID = 0
 
-local function updateTargetIsCasting()
-	guid = UnitGUID("target")
+local function updateTargetIsCasting()	
+	spell, rank, displayName, icon, startTime, endTime, isTradeSkill, castID, interrupt = UnitCastingInfo("target")
 		
-	if guid ~= nil then
-		spell, rank, displayName, icon, startTime, endTime, isTradeSkill, castID, interrupt = UnitCastingInfo("target")
-			
-		if castID ~= nil then	
-			if castID ~= lastTargetCastID then
-				print("Casting spell: " .. spell)
-			
-				targetIsCastingFrame.t:SetTexture(255, 0, 0, 1)
-			
-				lastTargetCastID = castID		
-			end
-		else
-			if castID ~= lastTargetCastID then
-				print("Not casting")
-				
-				targetIsCastingFrame.t:SetTexture(255, 255, 255, 1)
-				
-				lastTargetCastID = castID		
-			end	
+	if castID ~= nil then	
+		if castID ~= lastTargetCastID then
+			print("Casting spell: " .. spell)
+		
+			targetIsCastingFrame.t:SetTexture(255, 0, 0, 1)
+		
+			lastTargetCastID = castID		
 		end
 	else
 		if castID ~= lastTargetCastID then
-			print("No target")
-		
+			print("Not casting")
+			
 			targetIsCastingFrame.t:SetTexture(255, 255, 255, 1)
-		
-			lastTargetCastID = 0
-		end
-	end	
+			
+			lastTargetCastID = castID		
+		end	
+	end
 end
  
 local function initFrames()
