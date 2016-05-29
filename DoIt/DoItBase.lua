@@ -156,7 +156,7 @@ local function updatePower()
 		end
 		
 		local binaryPower = healthToBinary(power)			
-		print ("Power = " .. power .. " binary = ".. binaryPower)	
+		--print ("Power = " .. power .. " binary = ".. binaryPower)	
 		--print ("Current Spec = " .. currentSpecId)
 		
 		for i = 1, string.len(binaryPower) do
