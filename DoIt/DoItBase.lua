@@ -15,10 +15,12 @@ f:RegisterEvent("ADDON_LOADED")
 local hpframes = {}
 local cooldownframes = {}
 local healthFrames = {}
+local targetHealthFrames = {}
 local isTargetFriendlyFrame = nil
 local hasTargetFrame = nil
 local powerFrames = {}
 local playerIsCastingFrame = nil
+local targetIsCastingFrame = nil
 
 local hpPrev = 0
 local lastCooldownState = {}
@@ -122,6 +124,37 @@ local function updateHealth()
 		end
 		
 		lastHealth = percHealth
+	end
+end
+
+local lastTargetHealth = 0
+
+local function updateTargetHealth()
+	local guid = UnitGUID("target")
+	local health = UnitHealth("target");		
+	local maxHealth = UnitHealthMax("target");
+	local percHealth = ceil((health / maxHealth) * 100)
+	
+	if (guid == nil) then
+		percHealth = 0
+	end
+	
+	if (percHealth ~= lastTargetHealth) then		
+		local binaryHealth = healthToBinary(percHealth)
+		--print ("Target Health = " .. percHealth .. " binary = ".. binaryHealth)
+		
+		for i = 1, string.len(binaryHealth) do
+			local currentBit = string.sub(binaryHealth, i, i)
+			
+			if (currentBit == "1") then
+				targetHealthFrames[i].t:SetTexture(255, 0, 0, 1)
+			else
+				targetHealthFrames[i].t:SetTexture(255, 255, 255, 1)
+			end
+			targetHealthFrames[i].t:SetAllPoints(false)
+		end
+		
+		lastTargetHealth = percHealth
 	end
 end
 
@@ -235,8 +268,43 @@ local function updatePlayerIsCasting()
 			
 			lastCastID = castID		
 		end	
+	end		
+end
+
+local lastTargetCastID = 0
+
+local function updateTargetIsCasting()
+	guid = UnitGUID("target")
+		
+	if guid ~= nil then
+		spell, rank, displayName, icon, startTime, endTime, isTradeSkill, castID, interrupt = UnitCastingInfo("target")
+			
+		if castID ~= nil then	
+			if castID ~= lastTargetCastID then
+				print("Casting spell: " .. spell)
+			
+				targetIsCastingFrame.t:SetTexture(255, 0, 0, 1)
+			
+				lastTargetCastID = castID		
+			end
+		else
+			if castID ~= lastTargetCastID then
+				print("Not casting")
+				
+				targetIsCastingFrame.t:SetTexture(255, 255, 255, 1)
+				
+				lastTargetCastID = castID		
+			end	
+		end
+	else
+		if castID ~= lastTargetCastID then
+			print("No target")
+		
+			targetIsCastingFrame.t:SetTexture(255, 255, 255, 1)
+		
+			lastTargetCastID = 0
+		end
 	end	
-	
 end
  
 local function initFrames()
@@ -279,6 +347,19 @@ local function initFrames()
 		healthFrames[i]:Show()		
 		
 		healthFrames[i]:SetScript("OnUpdate", updateHealth)
+	end
+	
+	print ("Initialising Target Health Frames")
+	for i = 1, 7 do
+		targetHealthFrames[i] = CreateFrame("frame")
+		targetHealthFrames[i]:SetSize(size, size)
+		targetHealthFrames[i]:SetPoint("TOPLEFT", (i - 1) * size, -size * 4)        
+		targetHealthFrames[i].t = targetHealthFrames[i]:CreateTexture()        
+		targetHealthFrames[i].t:SetTexture(255, 255, 255, 1)
+		targetHealthFrames[i].t:SetAllPoints(targetHealthFrames[i])
+		targetHealthFrames[i]:Show()		
+		
+		targetHealthFrames[i]:SetScript("OnUpdate", updateTargetHealth)
 	end
 	
 	-- Power can go above 100, it can be 120 maximum to my knowledge
@@ -327,6 +408,17 @@ local function initFrames()
 	playerIsCastingFrame:Show()		
 		
 	playerIsCastingFrame:SetScript("OnUpdate", updatePlayerIsCasting)
+	
+	print ("Initialising TargetIsCasting Frame")
+	targetIsCastingFrame = CreateFrame("frame");
+	targetIsCastingFrame:SetSize(size, size);
+	targetIsCastingFrame:SetPoint("TOPLEFT", size * 3, -(size * 2))    
+	targetIsCastingFrame.t = targetIsCastingFrame:CreateTexture()        
+	targetIsCastingFrame.t:SetTexture(255, 255, 255, 1)
+	targetIsCastingFrame.t:SetAllPoints(targetIsCastingFrame)
+	targetIsCastingFrame:Show()		
+		
+	targetIsCastingFrame:SetScript("OnUpdate", updateTargetIsCasting)
 	
 	print ("Initialization Complete")
 end
