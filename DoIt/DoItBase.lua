@@ -18,6 +18,7 @@ local healthFrames = {}
 local isTargetFriendlyFrame = nil
 local hasTargetFrame = nil
 local powerFrames = {}
+local playerIsCastingFrame = nil
 
 local hpPrev = 0
 local lastCooldownState = {}
@@ -212,6 +213,31 @@ local function hasTarget()
 		lastTargetGUID = guid		
 	end
 end
+
+local lastCastID = 0
+
+local function updatePlayerIsCasting()
+	spell, rank, displayName, icon, startTime, endTime, isTradeSkill, castID, interrupt = UnitCastingInfo("player")
+	
+	if castID ~= nil then	
+		if castID ~= lastCastID then
+			--print("Casting spell: " .. spell)
+		
+			playerIsCastingFrame.t:SetTexture(255, 0, 0, 1)
+		
+			lastCastID = castID		
+		end
+	else
+		if castID ~= lastCastID then
+			--print("Not casting")
+			
+			playerIsCastingFrame.t:SetTexture(255, 255, 255, 1)
+			
+			lastCastID = castID		
+		end	
+	end	
+	
+end
  
 local function initFrames()
 	print ("Initialising Holy Power Frames")
@@ -290,6 +316,17 @@ local function initFrames()
 	hasTargetFrame:Show()		
 		
 	hasTargetFrame:SetScript("OnUpdate", hasTarget)
+	
+	print ("Initialising PlayerIsCasting Frame")
+	playerIsCastingFrame = CreateFrame("frame");
+	playerIsCastingFrame:SetSize(size, size);
+	playerIsCastingFrame:SetPoint("TOPLEFT", size * 2, -(size * 2))    
+	playerIsCastingFrame.t = playerIsCastingFrame:CreateTexture()        
+	playerIsCastingFrame.t:SetTexture(255, 255, 255, 1)
+	playerIsCastingFrame.t:SetAllPoints(playerIsCastingFrame)
+	playerIsCastingFrame:Show()		
+		
+	playerIsCastingFrame:SetScript("OnUpdate", updatePlayerIsCasting)
 	
 	print ("Initialization Complete")
 end
