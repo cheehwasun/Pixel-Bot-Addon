@@ -17,6 +17,7 @@ local cooldownframes = {}
 local healthFrames = {}
 local isTargetFriendlyFrame = nil
 local hasTargetFrame = nil
+local powerFrames = {}
 
 local hpPrev = 0
 local lastCooldownState = {}
@@ -122,6 +123,54 @@ local function updateHealth()
 		lastHealth = percHealth
 	end
 end
+
+local lastPower = 0
+local playerClass, englishClass, classIndex = UnitClass("player");
+local currentSpec = GetSpecialization()
+local currentSpecId = currentSpec and select(1, GetSpecializationInfo(currentSpec)) or 0
+
+local function updatePower()
+	local power = UnitPower("player");		
+	local maxPower = UnitPowerMax("player");
+	
+	-- For testing 120 we will hardcode to add 20 to current power since we testing on a hunter
+	-- power = power + 20
+	
+	if (power ~= lastPower) then
+		lastPower = power
+			
+		-- If the class uses mana, then we need to calculate percent mana to show its power
+		-- http://wowwiki.wikia.com/wiki/API_UnitClass
+		-- http://wowwiki.wikia.com/wiki/SpecializationID
+		if (
+			(classIndex == 7)  -- Shaman   
+		 or (classIndex == 2)  -- Paladin
+		 or (classIndex == 5)  -- Priest 
+		 or (classIndex == 8)  -- Mage
+		 or (classIndex == 9)  -- Lock
+		 or ((classIndex == 11) and (currentSpecId == 102)) -- Druid Balance
+		 or ((classIndex == 11) and (currentSpecId == 105)) -- Druid Resto 
+		   ) 
+		then 
+			power = ceil((power / maxPower) * 100)
+		end
+		
+		local binaryPower = healthToBinary(power)			
+		print ("Power = " .. power .. " binary = ".. binaryPower)	
+		--print ("Current Spec = " .. currentSpecId)
+		
+		for i = 1, string.len(binaryPower) do
+			local currentBit = string.sub(binaryPower, i, i)
+			
+			if (currentBit == "1") then
+				powerFrames[i].t:SetTexture(255, 0, 0, 1)
+			else
+				powerFrames[i].t:SetTexture(255, 255, 255, 1)
+			end
+			powerFrames[i].t:SetAllPoints(false)
+		end	
+	end
+end
  
 local lastIsFriend = true 
  
@@ -206,6 +255,20 @@ local function initFrames()
 		healthFrames[i]:SetScript("OnUpdate", updateHealth)
 	end
 	
+	-- Power can go above 100, it can be 120 maximum to my knowledge
+	print ("Initialising Power Frames (Rage, Energy, etc...)")  
+	for i = 1, 7 do
+		powerFrames[i] = CreateFrame("frame")
+		powerFrames[i]:SetSize(size, size)
+		powerFrames[i]:SetPoint("TOPLEFT", (i - 1) * size, -size * 3)        
+		powerFrames[i].t = powerFrames[i]:CreateTexture()        
+		powerFrames[i].t:SetTexture(255, 255, 255, 1)
+		powerFrames[i].t:SetAllPoints(powerFrames[i])
+		powerFrames[i]:Show()		
+		
+		powerFrames[i]:SetScript("OnUpdate", updatePower)
+	end
+	
 	print ("Initialising IsTargetFriendly Frame")
 	isTargetFriendlyFrame = CreateFrame("frame");
 	isTargetFriendlyFrame:SetSize(size, size);
@@ -237,7 +300,6 @@ local function eventHandler(self, event, ...)
 		if (arg1 == "DoIt") then
 			print("Addon Loaded... DoIt")
 			print("Tracking " .. table.getn(cooldowns) .. " cooldowns")
-			print("Health: " .. healthToBinary(100))
 			initFrames()
 		end
 	end
