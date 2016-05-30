@@ -14,6 +14,7 @@ f:RegisterEvent("ADDON_LOADED")
 
 local hpframes = {}
 local cooldownframes = {}
+local spellInRangeFrames = {}
 local healthFrames = {}
 local targetHealthFrames = {}
 local isTargetFriendlyFrame = nil
@@ -84,6 +85,27 @@ local function updateCD()
 				end
 			end				
 		end
+	end
+end
+
+local function updateSpellInRangeFrames() 
+	for _, spellId in pairs(cooldowns) do
+	
+		-- http://wowwiki.wikia.com/wiki/API_IsSpellInRange	
+		local inRange = IsSpellInRange(spellId, "spell", "target")  -- '0' if out of range, '1' if in range, or 'nil' if the unit is invalid. 
+								
+		if (inRange == 1) then
+			spellInRangeFrames[spellId].t:SetTexture(255, 0, 0, 1)
+		else
+			spellInRangeFrames[spellId].t:SetTexture(255, 255, 255, 1)
+		end 
+		spellInRangeFrames[spellId].t:SetAllPoints(false)	
+		
+		if (inRange ~=nil) then		
+			print("Spell Id: " .. spellId .. " InRange = " .. inRange)
+		else
+			print("Inrange = nil")			
+		end		
 	end
 end
 
@@ -321,6 +343,21 @@ local function initFrames()
 		cooldownframes[spellId]:Show()
 		               
 		cooldownframes[spellId]:SetScript("OnUpdate", updateCD)
+		i = i + 1
+	end
+	
+	print ("Initialising Spell In Range Frames")
+	local i = 0
+	for _, spellId in pairs(cooldowns) do	
+		spellInRangeFrames[spellId] = CreateFrame("frame")
+		spellInRangeFrames[spellId]:SetSize(size, size)
+		spellInRangeFrames[spellId]:SetPoint("TOPLEFT", i * size, -size * 5)        
+		spellInRangeFrames[spellId].t = spellInRangeFrames[spellId]:CreateTexture()        
+		spellInRangeFrames[spellId].t:SetTexture(255, 255, 255, 1)
+		spellInRangeFrames[spellId].t:SetAllPoints(spellInRangeFrames[spellId])
+		spellInRangeFrames[spellId]:Show()
+		               
+		spellInRangeFrames[spellId]:SetScript("OnUpdate", updateSpellInRangeFrames)
 		i = i + 1
 	end
 	
