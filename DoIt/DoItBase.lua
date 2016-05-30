@@ -88,24 +88,28 @@ local function updateCD()
 	end
 end
 
+local lastSpellInRange = {}
+
 local function updateSpellInRangeFrames() 
 	for _, spellId in pairs(cooldowns) do
-	
-		-- http://wowwiki.wikia.com/wiki/API_IsSpellInRange	
-		local inRange = IsSpellInRange(spellId, "spell", "target")  -- '0' if out of range, '1' if in range, or 'nil' if the unit is invalid. 
-								
-		if (inRange == 1) then
-			spellInRangeFrames[spellId].t:SetTexture(255, 0, 0, 1)
-		else
-			spellInRangeFrames[spellId].t:SetTexture(255, 255, 255, 1)
-		end 
-		spellInRangeFrames[spellId].t:SetAllPoints(false)	
 		
-		if (inRange ~=nil) then		
-			print("Spell Id: " .. spellId .. " InRange = " .. inRange)
-		else
-			print("Inrange = nil")			
-		end		
+		local name, rank, icon, castTime, minRange, maxRange = GetSpellInfo(spellId)
+		
+		-- http://wowwiki.wikia.com/wiki/API_IsSpellInRange	
+		local inRange = IsSpellInRange(name, "target")  -- '0' if out of range, '1' if in range, or 'nil' if the unit is invalid. 
+								
+		if lastSpellInRange[spellId] ~= inRange then
+			if (inRange == 1) then
+				spellInRangeFrames[spellId].t:SetTexture(255, 0, 0, 1)
+			else
+				spellInRangeFrames[spellId].t:SetTexture(255, 255, 255, 1)
+			end 
+			spellInRangeFrames[spellId].t:SetAllPoints(false)
+			
+			--print("Spell: " .. name .. " InRange = " .. inRange)
+			
+			lastSpellInRange[spellId] = inRange	
+		end				
 	end
 end
 
